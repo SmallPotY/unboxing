@@ -1,6 +1,29 @@
 # -*- coding:utf-8 -*-
 from collections import OrderedDict
 import xlrd
+import xlwt
+import time
+import os
+
+
+def writeExcel(content):
+    """
+    写入excel
+    :param content:  内容列表，包含表头
+    :return: 返回文件路径
+    """
+    workbook = xlwt.Workbook(encoding='utf-8')
+    sheet = workbook.add_sheet("sheet1")
+
+    # 遍历内容写入
+    for r_index, row in enumerate(content):
+        for c_index, column in enumerate(row):
+            sheet.write(r_index, c_index, content[r_index][c_index])
+
+    fileName = str(int(time.time())) + '.xls'
+    workbook.save(fileName)  # 保存
+    path = os.path.dirname(__file__) + os.sep + fileName
+    return path
 
 
 def readExcel(file, table_name=None):
@@ -70,7 +93,8 @@ def get_setting(config):
                     "length": length,
                     "width": width,
                     "height": height,
-                    "volume": volume
+                    "volume": volume,
+                    "diagonal": diagonal(length, width, height)
                 }
                 result.append(tmp)
             except Exception as err:
@@ -86,5 +110,24 @@ def get_setting(config):
     return result
 
 
+def diagonal(*length_width_height):
+    """
+    求对角线长度
+    :return:
+    """
+    diagonal_list_tmp = []
+    for a_index, a in enumerate(length_width_height):
+        for b_index, b in enumerate(length_width_height):
+            if a_index != b_index:
+                diagonal_list_tmp.append([a, b])
+    diagonal_list = set()
+    for i in diagonal_list_tmp:
+        v = (i[0] ** 2 + i[1] ** 2) ** (1 / 2)
+        diagonal_list.add(v)
+
+    return list(diagonal_list)
+
+
 if __name__ == "__main__":
-    print(get_setting("箱型"))
+    t = get_setting("箱型")
+    print(t)

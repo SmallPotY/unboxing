@@ -1,5 +1,10 @@
 /venv
+/build
+/dist
 .idea
 __pycache__
 .vscode
-配置表.xlsx
+*.xlsx
+*.spec
+pp.py
+box.ico
