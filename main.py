@@ -227,7 +227,7 @@ class App:
                 self.box_statistics.insert('', i, values=("合计", sumV))
 
                 if ask == "yes":
-                    os.system(result["file_path"])
+                    os.startfile(result["file_path"])
 
             except Exception as err:
                 show_info(err)
