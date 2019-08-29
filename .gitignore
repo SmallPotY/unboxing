@@ -10,3 +10,5 @@ pp.py
 box.ico
 /env_unboxing
 /.vs
+*.xls
+*.pyproj
