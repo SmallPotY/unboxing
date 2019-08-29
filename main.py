@@ -218,16 +218,19 @@ class App:
                 result = calculation(filename)
                 ask = askquestion('提示', '计算完成,是否打开表格?')
                 delButton(self.box_statistics)
-                i = 0
                 sumV = 0
-                for k, v in result["box_statistics"].items():
-                    self.box_statistics.insert('', i, values=(k, v))
+                d = result["box_statistics"]
+                res = sorted(d.items(), key=lambda d: d[1], reverse=True)
+                i = 0
+                for item in res:
+                    self.box_statistics.insert('', i, values=(item[0], item[1]))
+                    sumV += item[1]
                     i += 1
-                    sumV += v
-                self.box_statistics.insert('', i, values=("合计", sumV))
+                self.box_statistics.insert('', i + 1, values=("合计", sumV))
 
                 if ask == "yes":
                     os.startfile(result["file_path"])
+
 
             except Exception as err:
                 show_info(err)

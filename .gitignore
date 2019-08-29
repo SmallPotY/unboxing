@@ -8,3 +8,5 @@ __pycache__
 *.spec
 pp.py
 box.ico
+/env_unboxing
+/.vs
