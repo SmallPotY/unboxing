@@ -9,6 +9,7 @@ product_data = None
 box_data = {}
 is_ignore = None
 fill_rate = 0
+user_selected_box = []
 
 
 def show_info(content):
@@ -105,22 +106,25 @@ def calculation(file):
         for box in box_data:
             # fill_space = box["volume"] * ((float(fill_rate)) / 100)
             fill_space = items_volume * ((100 + int(fill_rate)) / 100)
-            if box["volume"] > fill_space:
-                # 箱子的容积 大于 订单总体积* (100+ 填充率)%
-                if max(items_max_length) < max(box['diagonal']):
-                    # 不会有超过箱子边长的物品放入
-                    box_volume = box["volume"]
-                    box_name = box['name']
 
-                    if not box_statistics.get(box['name']):
-                        box_statistics[box['name']] = 1
-                    else:
-                        box_statistics[box['name']] += 1
-                    flag = True
-                    break
+            if box["box_type"] in user_selected_box:
+
+                if box["volume"] > fill_space:
+                    # 箱子的容积 大于 订单总体积* (100+ 填充率)%
+                    if max(items_max_length) < max(box['diagonal']):
+                        # 不会有超过箱子边长的物品放入
+                        box_volume = box["volume"]
+                        box_name = box['name']
+
+                        if not box_statistics.get(box['name']):
+                            box_statistics[box['name']] = 1
+                        else:
+                            box_statistics[box['name']] += 1
+                        flag = True
+                        break
 
         if not flag:
-            box_name = "没有找到合适的箱子"
+            box_name = "没有找到合适的箱子(订单体积超大)"
         orders[i]["箱型"] = box_name
         orders[i]["箱型体积"] = box_volume if box_volume else "N/A"
         orders[i]["商品体积"] = items_volume
@@ -148,7 +152,7 @@ def calculation(file):
 
 class App:
     def __init__(self, root):
-
+        self.root = root
         self.ignore = tk.IntVar()
         self.ignore.set(1)
 
@@ -156,15 +160,15 @@ class App:
         sh = root.winfo_screenheight()
         ww = 420
         wh = 600
-        x = (sw - ww) / 2
-        y = (sh - wh) / 2
-        root.geometry("%dx%d+%d+%d" % (ww, wh, x, y))
+        self.x = (sw - ww) / 2
+        self.y = (sh - wh) / 2
+        root.geometry("%dx%d+%d+%d" % (ww, wh, self.x, self.y))
         root.title('箱型推荐')
         root.resizable(False, False)
         frame = tk.Frame(root)
         frame.grid(row=0, column=0, sticky=tk.E)
 
-        self.la = tk.Label(frame, text='商品填充比率')
+        self.la = tk.Label(frame, text='预留空间(百分比)')
         self.la.grid(row=0, column=1, padx=5, pady=5, sticky=tk.W)
         self.fill_rate = tk.Entry(frame, show=None)
         self.fill_rate.insert(0, 10)
@@ -176,7 +180,7 @@ class App:
         self.btn_openFile = tk.Button(frame, text="选择数据表", fg="blue", command=self.open_file)
         self.btn_openFile.grid(row=3, column=1, padx=5, pady=5)
 
-        description = """计算逻辑:  1. [ 箱体积 ] 大于 [ 订单商品总体积 * (100+填充比率)% ]
+        description = """计算逻辑:  1. [ 箱体积 ] 大于 [ 订单商品总体积 * (100+预留空间)% ]
                2. [ 订单内所有商品的长宽高 ] 均小于 [ 箱子最长的对角线 ]
                3. 推荐满足以上条件的最小箱型
         """
@@ -217,27 +221,67 @@ class App:
                 show_info("{}-{}".format(err, "读取配置时出现异常"))
                 return
 
-            is_ignore = tmp_ignore
-            fill_rate = tmp_fill_rate
-            try:
-                result = calculation(filename)
-                ask = askquestion('提示', '计算完成,是否打开表格?')
-                delButton(self.box_statistics)
-                sumV = 0
-                d = result["box_statistics"]
-                res = sorted(d.items(), key=lambda d: d[1], reverse=True)
-                i = 0
-                for item in res:
-                    self.box_statistics.insert('', i, values=(item[0], item[1]))
-                    sumV += item[1]
-                    i += 1
-                self.box_statistics.insert('', i + 1, values=("合计", sumV))
+            # 弹出选择箱型品牌的窗体
+            frm = tk.Toplevel()
+            frm.title('选择箱型模板')
+            frm.geometry("%dx%d+%d+%d" % (200, 300, self.x, self.y))
+            frm.resizable(False, False)
 
-                if ask == "yes":
-                    os.startfile(result["file_path"])
+            box_type = [i["box_type"] for i in box_data]
 
-            except Exception as err:
-                show_info(err)
+            txt = tk.Label(frm, text='请选择箱型模板:')
+            txt.pack()
+
+            v = tk.StringVar()
+            selected_box = tk.Listbox(frm, selectmode=tk.MULTIPLE,
+                                      listvariable=v)  # 这里还有一个selectmode选项，默认是BROWSE（单选,拖动鼠标或方向键可以改变选项），
+            selected_box.pack()
+            for i in set(box_type):
+                selected_box.insert(tk.END, i)
+
+            btn_ok = tk.Button(frm, text="开始计算", fg="blue",
+                               command=lambda: self.calculation(filename, tmp_fill_rate, tmp_ignore, frm, eval(v.get()),
+                                                                selected_box.curselection()))
+            btn_ok.pack()
+
+    def calculation(self, filename, tmp_fill_rate, tmp_ignore, frm, v, select):
+        global product_data
+        global box_data
+        global is_ignore
+        global fill_rate
+        global user_selected_box
+
+        user_selected_box = []
+        for i in select:
+            user_selected_box.append(v[i])
+
+        if not user_selected_box:
+            show_info("请至少选择一种品牌的箱型")
+            return
+
+        is_ignore = tmp_ignore
+        fill_rate = tmp_fill_rate
+        try:
+            result = calculation(filename)
+            ask = askquestion('提示', '计算完成,是否打开表格?')
+            delButton(self.box_statistics)
+            sumV = 0
+            d = result["box_statistics"]
+            res = sorted(d.items(), key=lambda d: d[1], reverse=True)
+            i = 0
+            for item in res:
+                self.box_statistics.insert('', i, values=(item[0], item[1]))
+                sumV += item[1]
+                i += 1
+            self.box_statistics.insert('', i + 1, values=("合计", sumV))
+
+            if ask == "yes":
+                os.startfile(result["file_path"])
+
+        except Exception as err:
+            show_info(err)
+        finally:
+            frm.destroy()
 
 
 root_windows = tk.Tk()

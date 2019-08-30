@@ -89,12 +89,14 @@ def get_setting(config):
         data = readExcel(file, config)
         for i in data["table_body"]:
             try:
+                box_type = i[0]
                 name = i[0] + "-" + i[1]
                 length = float(i[2]) if i[2] else 0
                 width = float(i[3]) if i[3] else 0
                 height = float(i[4]) if i[4] else 0
                 volume = length * width * height
                 tmp = {
+                    "box_type": box_type,
                     "name": name,
                     "length": length,
                     "width": width,
