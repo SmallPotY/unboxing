@@ -1,9 +1,15 @@
 # -*- coding:utf-8 -*-
-from collections import OrderedDict
 import xlrd
 import xlwt
-import time
+import datetime
 import os
+import sys
+
+application_path = ""
+if getattr(sys, 'frozen', False):
+    application_path = os.path.dirname(sys.executable)
+elif __file__:
+    application_path = os.path.dirname(__file__)
 
 
 def writeExcel(content):
@@ -20,9 +26,9 @@ def writeExcel(content):
         for c_index, column in enumerate(row):
             sheet.write(r_index, c_index, content[r_index][c_index])
 
-    fileName = str(int(time.time())) + '.xls'
+    fileName = "箱型计算_" + datetime.datetime.now().strftime("%Y%m%d%H%M%S") + '.xls'
     workbook.save(fileName)  # 保存
-    path = os.path.dirname(__file__) + os.sep + fileName
+    path = os.path.join(application_path, fileName)
     return path
 
 

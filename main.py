@@ -1,9 +1,8 @@
 # -*- coding:utf-8 -*-
 import tkinter as tk
 import tkinter.filedialog
-from tkinter.messagebox import *
+from tkinter.messagebox import showinfo, askquestion
 from tkinter.ttk import Treeview
-
 from utils import *
 
 product_data = None
@@ -34,8 +33,8 @@ def check_table_format(table_head):
     """
     msg = ""
     flag = False
-    if "快递单号" not in table_head:
-        msg += "表格中缺少【快递单号】字段；"
+    if "订单号" not in table_head:
+        msg += "表格中缺少【订单号】字段；"
         flag = True
     if "商品条码" not in table_head:
         msg += "表格中缺少【商品条码】字段；"
@@ -56,7 +55,7 @@ def calculation(file):
 
     check_table_format(table_head)
 
-    order_index = table_head.index("快递单号")
+    order_index = table_head.index("订单号")
     item_index = table_head.index("商品条码")
     number_index = table_head.index("数量")
     box_statistics = {}
@@ -82,13 +81,19 @@ def calculation(file):
             else:
 
                 if is_ignore:
-                    item_parameter = {"length": 0,
-                                      "width": 0,
-                                      "height": 0,
-                                      "volume": 0}
+                    item_parameter = product_data.get("默认的计算体积")
+                    if not item_parameter:
+                        raise Exception("商品资料中不存在[默认的计算体积],请补充记录".format(c[0]))
                     remarks += "{0}无体积资料".format(c[0])
                 else:
-                    raise Exception("{0}无体积资料,请补充".format(c[0]))
+
+                    dic = set()
+                    for dd in orders:
+                        for sp in orders[dd]["商品"]:
+                            if not product_data.get(sp[0]):
+                                dic.add(sp[0])
+                    info = ",".join(dic)
+                    raise Exception("运算失败,以下商品无长宽高数据:\n{}".format(info))
 
             max_length = max(item_parameter["length"], item_parameter["width"], item_parameter["height"])  # 当前物体最长的边
             volume = item_parameter["volume"] * c[1]
@@ -98,10 +103,10 @@ def calculation(file):
 
         flag = False
         for box in box_data:
-            fill_space = box["volume"] * ((float(fill_rate)) / 100)
-            volume = box["volume"] - fill_space
-            if volume > items_volume:
-                # 箱子的容积大于订单总体积
+            # fill_space = box["volume"] * ((float(fill_rate)) / 100)
+            fill_space = items_volume * ((100 + int(fill_rate)) / 100)
+            if box["volume"] > fill_space:
+                # 箱子的容积 大于 订单总体积* (100+ 填充率)%
                 if max(items_max_length) < max(box['diagonal']):
                     # 不会有超过箱子边长的物品放入
                     box_volume = box["volume"]
@@ -123,7 +128,7 @@ def calculation(file):
         orders[i]["备注"] = remarks
         orders[i]['商品'] = item_set
 
-    table_title = ["运单号", "商品", "箱型", "商品体积", "箱型体积", "装箱率", "备注"]
+    table_title = ["订单号", "商品", "箱型", "商品体积", "箱型体积", "装箱率", "备注"]
     content = []
     for k, v in orders.items():
         tmp = [k]
@@ -149,7 +154,7 @@ class App:
 
         sw = root.winfo_screenwidth()
         sh = root.winfo_screenheight()
-        ww = 410
+        ww = 420
         wh = 600
         x = (sw - ww) / 2
         y = (sh - wh) / 2
@@ -159,20 +164,20 @@ class App:
         frame = tk.Frame(root)
         frame.grid(row=0, column=0, sticky=tk.E)
 
-        self.la = tk.Label(frame, text='填充率')
+        self.la = tk.Label(frame, text='商品填充比率')
         self.la.grid(row=0, column=1, padx=5, pady=5, sticky=tk.W)
-        self.fill_rate = tk.Entry(frame, show=None, text="3")
-        self.fill_rate.insert(0, 3)
+        self.fill_rate = tk.Entry(frame, show=None)
+        self.fill_rate.insert(0, 10)
         self.fill_rate.grid(row=0, column=1, padx=5, pady=5)
 
-        self.c1 = tk.Checkbutton(frame, text='缺资料商品的体积视为0', variable=self.ignore, onvalue=1, offvalue=0)
+        self.c1 = tk.Checkbutton(frame, text='缺资料商品不进行提示,以默认体积计算', variable=self.ignore, onvalue=1, offvalue=0)
         self.c1.grid(row=1, column=1, padx=5, pady=5)
 
         self.btn_openFile = tk.Button(frame, text="选择数据表", fg="blue", command=self.open_file)
         self.btn_openFile.grid(row=3, column=1, padx=5, pady=5)
 
-        description = """计算逻辑:  1. [ 箱体积 * (100 - 填充率)% ] 大于 [ 订单商品总体积 ]
-               2. [ 订单内所有商品的长、宽、高 ] 均小于 [ 箱子最长的对角线 ]
+        description = """计算逻辑:  1. [ 箱体积 ] 大于 [ 订单商品总体积 * (100+填充比率)% ]
+               2. [ 订单内所有商品的长宽高 ] 均小于 [ 箱子最长的对角线 ]
                3. 推荐满足以上条件的最小箱型
         """
         self.la = tk.Label(frame, text=description, fg="red", justify='left')
@@ -183,7 +188,7 @@ class App:
         self.box_statistics.heading("箱型", text="箱型")  # 显示表头
         self.box_statistics.heading("数量", text="数量")
 
-        self.box_statistics.grid(row=7, column=1)
+        self.box_statistics.grid(row=7, column=1, padx=5, pady=5)
 
     def open_file(self):
         tmp_fill_rate = self.fill_rate.get()
@@ -197,7 +202,7 @@ class App:
             show_info("填充率必须是0~99的数字")
             return
 
-        filename = tkinter.filedialog.askopenfilename()
+        filename = tkinter.filedialog.askopenfilename(title='选择订单明细表', filetypes=[('Excel', '*.xlsx')])
 
         if filename != '':
             global product_data
@@ -230,7 +235,6 @@ class App:
 
                 if ask == "yes":
                     os.startfile(result["file_path"])
-
 
             except Exception as err:
                 show_info(err)
