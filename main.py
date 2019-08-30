@@ -223,8 +223,7 @@ class App:
 
             # 弹出选择箱型品牌的窗体
             frm = tk.Toplevel()
-            frm.title('选择箱型模板')
-            frm.geometry("%dx%d+%d+%d" % (200, 300, self.x, self.y))
+            frm.geometry("%dx%d+%d+%d" % (200, 300, self.x+100, self.y+150))
             frm.resizable(False, False)
 
             box_type = [i["box_type"] for i in box_data]
@@ -234,7 +233,7 @@ class App:
 
             v = tk.StringVar()
             selected_box = tk.Listbox(frm, selectmode=tk.MULTIPLE,
-                                      listvariable=v)  # 这里还有一个selectmode选项，默认是BROWSE（单选,拖动鼠标或方向键可以改变选项），
+                                      listvariable=v)
             selected_box.pack()
             for i in set(box_type):
                 selected_box.insert(tk.END, i)
