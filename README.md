@@ -18,40 +18,40 @@
 
 
 
-![1567141336441](C:\Users\dell\Desktop\unboxing\README.assets\1567141336441.png)
+![1567141336441](https://raw.githubusercontent.com/SmallPotY/unboxing/master/README.assets/1567141336441.png)
 
 ### 三、界面说明
 
-![1567139912936](C:\Users\dell\Desktop\unboxing\README.assets\1567139912936.png)
+![1567139912936](https://raw.githubusercontent.com/SmallPotY/unboxing/master/README.assets/1567139912936.png)
 
-![1567140354577](C:\Users\dell\Desktop\unboxing\README.assets\1567140354577.png)
+![1567140354577](https://raw.githubusercontent.com/SmallPotY/unboxing/master/README.assets/1567140354577.png)
 
 
 
 ### 四、计算结果说明
 
-![1567142201802](C:\Users\dell\Desktop\unboxing\README.assets\1567142201802.png)
+![1567142201802](https://raw.githubusercontent.com/SmallPotY/unboxing/master/README.assets/1567142201802.png)
 
 ### 五、部分错误说明
 
 ##### a. 选择的数据表格式不对，表头没有对应字段
 
-![1567140494677](C:\Users\dell\Desktop\unboxing\README.assets\1567140494677.png)
+![1567140494677](https://raw.githubusercontent.com/SmallPotY/unboxing/master/README.assets/1567140494677.png)
 
 
 
 ##### b. 配置表.xlsx 不在应用程序的同级目录下, 或配置表的格式被修改，无法正确读取资料
 
-![1567140564227](C:\Users\dell\Desktop\unboxing\README.assets\1567140564227.png)
+![1567140564227](https://raw.githubusercontent.com/SmallPotY/unboxing/master/README.assets/1567140564227.png)
 
 
 
 ##### c. 运算失败，部分商品没资料的情况下未勾选 ”缺资料商品不提示“
 
-![1567140775711](C:\Users\dell\Desktop\unboxing\README.assets\1567140775711.png)
+![1567140775711](https://raw.githubusercontent.com/SmallPotY/unboxing/master/README.assets/1567140775711.png)
 
 
 
 ##### d. 预留空间必须是0~99数字, 预留空间仅能填写数字,且不得超过99
 
-![1567140924669](C:\Users\dell\Desktop\unboxing\README.assets\1567140924669.png)
+![1567140924669](https://raw.githubusercontent.com/SmallPotY/unboxing/master/README.assets/1567140924669.png)
