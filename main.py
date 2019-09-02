@@ -63,10 +63,13 @@ def calculation(file):
     orders = {}
 
     for item in table_body:
-        if item[order_index] not in orders:
-            orders[item[order_index]] = {"商品": [(item[item_index], int(item[number_index]))]}
-        else:
-            orders[item[order_index]]['商品'].append((item[item_index], int(item[number_index])))
+        try:
+            if item[order_index] not in orders:
+                orders[item[order_index]] = {"商品": [(item[item_index], int(item[number_index]))]}
+            else:
+                orders[item[order_index]]['商品'].append((item[item_index], int(item[number_index])))
+        except Exception as err:
+            print(err)
 
     for i in orders:
         box_name = ""
@@ -223,7 +226,7 @@ class App:
 
             # 弹出选择箱型品牌的窗体
             frm = tk.Toplevel()
-            frm.geometry("%dx%d+%d+%d" % (200, 300, self.x+100, self.y+150))
+            frm.geometry("%dx%d+%d+%d" % (200, 300, self.x + 100, self.y + 150))
             frm.resizable(False, False)
 
             box_type = [i["box_type"] for i in box_data]

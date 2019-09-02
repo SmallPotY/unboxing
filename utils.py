@@ -1,9 +1,9 @@
 # -*- coding:utf-8 -*-
 import xlrd
-import xlwt
 import datetime
 import os
 import sys
+import xlsxwriter
 
 application_path = ""
 if getattr(sys, 'frozen', False):
@@ -18,17 +18,16 @@ def writeExcel(content):
     :param content:  内容列表，包含表头
     :return: 返回文件路径
     """
-    workbook = xlwt.Workbook(encoding='utf-8')
-    sheet = workbook.add_sheet("sheet1")
 
-    # 遍历内容写入
+    fileName = "箱型计算_" + datetime.datetime.now().strftime("%Y%m%d%H%M%S") + '.xlsx'
+    path = os.path.join(application_path, fileName)
+
+    workbook = xlsxwriter.Workbook(fileName)
+    sheet = workbook.add_worksheet()
     for r_index, row in enumerate(content):
         for c_index, column in enumerate(row):
             sheet.write(r_index, c_index, content[r_index][c_index])
-
-    fileName = "箱型计算_" + datetime.datetime.now().strftime("%Y%m%d%H%M%S") + '.xls'
-    workbook.save(fileName)  # 保存
-    path = os.path.join(application_path, fileName)
+    workbook.close()
     return path
 
 
@@ -56,6 +55,7 @@ def readExcel(file, table_name=None):
     for x in range(1, sheet_rows):
         tmp = [sheet.cell_value(x, i) for i in range(sheet_cols)]
         table_body.append(tmp)
+
     result = {
         'table_head': table_head,
         'table_body': table_body

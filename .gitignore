@@ -4,11 +4,9 @@
 .idea
 __pycache__
 .vscode
-*.xlsx
 *.spec
 pp.py
 box.ico
 /env_unboxing
 /.vs
-*.xls
 *.pyproj

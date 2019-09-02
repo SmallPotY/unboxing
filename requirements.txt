@@ -1,3 +1,4 @@
+xlsxwriter
 altgraph==0.16.1
 future==0.17.1
 pefile==2019.4.18
